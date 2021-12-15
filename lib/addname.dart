@@ -59,7 +59,8 @@ class _addNameState extends State<addName> {
                patientDao!.insertPerson(Patient( 1,name.text,'image' ,int.parse(age.text),1));
                print('$name');
               }, 
-              child: Text('save'))
+              
+              child: Text('saveee'))
             ],
           ),
         ));
