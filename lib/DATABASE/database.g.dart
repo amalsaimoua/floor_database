@@ -82,7 +82,7 @@ class _$AppDatabase extends AppDatabase {
       },
       onCreate: (database, version) async {
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Patient` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `image` TEXT NOT NULL, `sex` INTEGER NOT NULL, `Bdate` INTEGER NOT NULL, PRIMARY KEY (`id`))');
+            'CREATE TABLE IF NOT EXISTS `Patient` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `image` TEXT NOT NULL, `sex` INTEGER NOT NULL, `Bdate` INTEGER NOT NULL)');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -108,6 +108,28 @@ class _$PatientDao extends PatientDao {
                   'image': item.image,
                   'sex': item.sex,
                   'Bdate': item.Bdate
+                }),
+        _patientUpdateAdapter = UpdateAdapter(
+            database,
+            'Patient',
+            ['id'],
+            (Patient item) => <String, Object?>{
+                  'id': item.id,
+                  'name': item.name,
+                  'image': item.image,
+                  'sex': item.sex,
+                  'Bdate': item.Bdate
+                }),
+        _patientDeletionAdapter = DeletionAdapter(
+            database,
+            'Patient',
+            ['id'],
+            (Patient item) => <String, Object?>{
+                  'id': item.id,
+                  'name': item.name,
+                  'image': item.image,
+                  'sex': item.sex,
+                  'Bdate': item.Bdate
                 });
 
   final sqflite.DatabaseExecutor database;
@@ -118,11 +140,15 @@ class _$PatientDao extends PatientDao {
 
   final InsertionAdapter<Patient> _patientInsertionAdapter;
 
+  final UpdateAdapter<Patient> _patientUpdateAdapter;
+
+  final DeletionAdapter<Patient> _patientDeletionAdapter;
+
   @override
   Future<List<Patient>> getAllPersons() async {
     return _queryAdapter.queryList('SELECT * FROM Patient',
         mapper: (Map<String, Object?> row) => Patient(
-            row['id'] as int,
+            row['id'] as int?,
             row['name'] as String,
             row['image'] as String,
             row['sex'] as int,
@@ -132,5 +158,15 @@ class _$PatientDao extends PatientDao {
   @override
   Future<void> insertPerson(Patient patient) async {
     await _patientInsertionAdapter.insert(patient, OnConflictStrategy.abort);
+  }
+
+  @override
+  Future<void> updatePerson(Patient patient) async {
+    await _patientUpdateAdapter.update(patient, OnConflictStrategy.abort);
+  }
+
+  @override
+  Future<void> deletePatient(Patient patient) async {
+    await _patientDeletionAdapter.delete(patient);
   }
 }
