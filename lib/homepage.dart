@@ -1,6 +1,5 @@
 // ignore_for_file: non_constant_identifier_names, prefer_const_constructors
 
-import 'dart:ffi';
 import 'package:ammmmmmal/MODLE/patient.dart';
 import 'package:ammmmmmal/updatepatientp.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +13,8 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
+List<Patient>? patient;
+
 class _HomePageState extends State<HomePage> {
   Future<List<Patient>> retrieveUsers() async {
     final database =
@@ -22,7 +23,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   int? id;
-  late Patient patient;
+
   TextEditingController name = TextEditingController();
   TextEditingController age = TextEditingController();
 
@@ -32,7 +33,8 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: const Text("Floor"),
       ),
-      body: FutureBuilder(
+      body:
+        FutureBuilder(
         future: retrieveUsers(),
         builder: (BuildContext context, AsyncSnapshot<List<Patient>> snapshot) {
           if (snapshot.hasData) {
@@ -54,9 +56,10 @@ class _HomePageState extends State<HomePage> {
                           InkWell(
                             onTap: () {
                               deleteFromDb(
-                                  id: snapshot.data![index].id,
-                                  name: snapshot.data![index].name,
-                                  age: snapshot.data![index].Bdate);
+                                  id: patient![index].id,
+                                  name: patient![index].name,
+                                  age: patient![index].Bdate);
+                              setState(() {});
                             },
                             child: Icon(Icons.delete),
                           ),
@@ -66,13 +69,17 @@ class _HomePageState extends State<HomePage> {
                           InkWell(
                             onTap: () {
                               Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => updatepatient(patient: , ),
-                                      
-                                      ));
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => updatepatient(
+                                      id: snapshot.data![index].id,
+                                       name: snapshot.data![index].name,
+                                        bdate: snapshot.data![index].Bdate,
+                                       
+                                        )),
+                              );
                             },
-                            child: const Icon(Icons.edit),
+                            child: Icon(Icons.edit),
                           ),
                         ],
                       ),
@@ -100,5 +107,6 @@ class _HomePageState extends State<HomePage> {
     Patient patient = Patient(id, name!, 'image', 1, age!);
 
     await PatientDao.deletePatient(patient);
+    setState(() {});
   }
 }

@@ -1,4 +1,5 @@
 import 'package:ammmmmmal/addname.dart';
+import 'package:ammmmmmal/updatepatientp.dart';
 import 'package:flutter/material.dart';
 import 'DATABASE/database.dart';
 import 'homepage.dart';
@@ -22,7 +23,7 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
-        home: const HomePage(),
+        home:  HomePage(),
         routes: {
           'addName': (context) => addName(),
           'home' : (context) => HomePage()

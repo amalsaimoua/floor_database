@@ -2,13 +2,13 @@
 
 import 'package:ammmmmmal/DAO/dao_person.dart';
 import 'package:ammmmmmal/MODLE/patient.dart';
-import 'package:ammmmmmal/homepage.dart';
-import 'package:floor/floor.dart';
+
 
 import 'package:flutter/material.dart';
 
 import 'DATABASE/database.dart';
 
+// ignore: camel_case_types
 class addName extends StatefulWidget {
   const addName({Key? key}) : super(key: key);
 
@@ -16,6 +16,7 @@ class addName extends StatefulWidget {
   _addNameState createState() => _addNameState();
 }
 
+// ignore: camel_case_types
 class _addNameState extends State<addName> {
   TextEditingController name = TextEditingController();
   TextEditingController age = TextEditingController();
@@ -31,7 +32,7 @@ class _addNameState extends State<addName> {
         ),
         body: SingleChildScrollView(
           child: Column(
-            // ignore: prefer_const_literals_to_create_immutables
+            
             children: [
               SizedBox(
                 height: 50,
@@ -40,9 +41,12 @@ class _addNameState extends State<addName> {
                 'Name:',
                 style: TextStyle(fontSize: 20),
               ),
-              TextField(
-                controller: name,
-                autofocus: false,
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                  controller: name,
+                  //autofocus: false,
+                ),
               ),
               SizedBox(
                 height: 30,
@@ -51,18 +55,25 @@ class _addNameState extends State<addName> {
                 'Age:',
                 style: TextStyle(fontSize: 20),
               ),
-              TextField(
-                controller: age,
-                autofocus: false,
-                keyboardType: TextInputType.number,
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextField(
+                  controller: age,
+                  //autofocus: false,
+                  keyboardType: TextInputType.number,
+                ),
               ),
               SizedBox(
                 height: 100,
               ),
               ElevatedButton(
                   onPressed: () {
-                    inserttodatabase(name: name.text, age: int.parse(age.text));
                     
+                    setState(() {
+                      inserttodatabase(name: name.text, age: int.parse(age.text));
+                  
+                    });
+                      Navigator.of(context).pop();
                   },
                   // async {
                   //   final database = await $FloorAppDatabase
@@ -79,11 +90,9 @@ class _addNameState extends State<addName> {
                   //   });
                   // },
                   child: Text('save')),
-              
             ],
           ),
-        )
-        );
+        ));
   }
 
   inserttodatabase({@required String? name, @required int? age}) async {
@@ -94,7 +103,6 @@ class _addNameState extends State<addName> {
     Patient patient = Patient(id, name!, 'image', 1, age!);
 
     await PatientDao.insertPerson(patient);
+    setState(() {});
   }
-
-  
 }

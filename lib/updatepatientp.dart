@@ -1,29 +1,31 @@
-// ignore_for_file: prefer_const_constructors, camel_case_types, avoid_print
+// ignore_for_file: prefer_const_constructors, camel_case_types, avoid_print, prefer_final_fields, use_key_in_widget_constructors, must_be_immutable
 import 'package:ammmmmmal/MODLE/patient.dart';
+import 'package:ammmmmmal/homepage.dart';
+import 'package:floor/floor.dart';
 import 'package:flutter/material.dart';
 
+import 'DAO/dao_person.dart';
+import 'DATABASE/database.dart';
+
 class updatepatient extends StatefulWidget {
-  const updatepatient({
-    Key? key,
-    required this.patient,
-  }) : super(key: key);
-  final Patient patient;
+  String? name;
+  int? id;
+  int? bdate;
+
+  updatepatient({this.name, this.id, this.bdate});
+
   @override
-  _updatepatientState createState() => _updatepatientState();
+  State<updatepatient> createState() => _updatepatientState();
 }
 
 class _updatepatientState extends State<updatepatient> {
+  Patient? patient;
+  PatientDao? dao;
+  Database? db;
   TextEditingController name = TextEditingController();
   TextEditingController age = TextEditingController();
-  //  late final Patient patient;
-  // @override
-  // void initState() {
-  //   super.initState();
-  // }
-
   @override
   Widget build(BuildContext context) {
-    // final toUpdateInfo = ModalRoute.of(context)!.settings.arguments as HomePage;
     return Scaffold(
         appBar: AppBar(
           title: Text('Update ur Info'),
@@ -35,11 +37,11 @@ class _updatepatientState extends State<updatepatient> {
                 height: 50,
               ),
               Text(
-                'Name:',
+                'Name',
                 style: TextStyle(fontSize: 20),
               ),
               TextField(
-                controller: name,
+                controller: name = TextEditingController(text: widget.name),
                 autofocus: false,
               ),
               SizedBox(
@@ -50,16 +52,25 @@ class _updatepatientState extends State<updatepatient> {
                 style: TextStyle(fontSize: 20),
               ),
               TextField(
-                controller: age,
+                controller: age =
+                    TextEditingController(text: widget.bdate.toString()),
                 autofocus: false,
-                keyboardType: TextInputType.number,
               ),
               SizedBox(
                 height: 100,
               ),
               ElevatedButton(
-                  onPressed: () {
-                    print(patient.name);
+                  onPressed: () async {
+                    final database = await $FloorAppDatabase
+                        .databaseBuilder('app_database.db')
+                        .build();
+                    Patient patient = Patient(
+                        widget.id, name.text, "", 1, int.parse(age.text));
+
+                    database.personDao.updatePerson(patient);
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (context) => HomePage()),
+                    );
                   },
                   child: Text('save')),
             ],
