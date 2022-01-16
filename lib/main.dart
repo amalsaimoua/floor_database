@@ -1,5 +1,6 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:ammmmmmal/addname.dart';
-import 'package:ammmmmmal/updatepatientp.dart';
 import 'package:flutter/material.dart';
 import 'DATABASE/database.dart';
 import 'homepage.dart';

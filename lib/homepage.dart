@@ -3,11 +3,11 @@
 import 'package:ammmmmmal/MODLE/patient.dart';
 import 'package:ammmmmmal/updatepatientp.dart';
 import 'package:flutter/material.dart';
-
 import 'DATABASE/database.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  Patient? patient;
+  HomePage({this.patient});
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -16,7 +16,7 @@ class HomePage extends StatefulWidget {
 List<Patient>? patient;
 
 class _HomePageState extends State<HomePage> {
-  Future<List<Patient>> retrieveUsers() async {
+  Future<List<Patient?>> retrieveUsers() async {
     final database =
         await $FloorAppDatabase.databaseBuilder('app_database.db').build();
     return await database.personDao.getAllPersons();
@@ -33,10 +33,10 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: const Text("Floor"),
       ),
-      body:
-        FutureBuilder(
+      body: FutureBuilder(
         future: retrieveUsers(),
-        builder: (BuildContext context, AsyncSnapshot<List<Patient>> snapshot) {
+        builder:
+            (BuildContext context, AsyncSnapshot<List<Patient?>> snapshot) {
           if (snapshot.hasData) {
             return ListView.builder(
               itemCount: snapshot.data?.length,
@@ -49,17 +49,25 @@ class _HomePageState extends State<HomePage> {
                       contentPadding: const EdgeInsets.all(8.0),
                       title: Row(
                         children: [
-                          Text(snapshot.data![index].name),
+                          Text(snapshot.data![index]!.name.toString()),
                           SizedBox(
                             width: MediaQuery.of(context).size.width * 0.02,
                           ),
                           InkWell(
-                            onTap: () {
-                              deleteFromDb(
-                                  id: patient![index].id,
-                                  name: patient![index].name,
-                                  age: patient![index].Bdate);
-                              setState(() {});
+                            onTap: () async {
+                              final database = await $FloorAppDatabase
+                                  .databaseBuilder('app_database.db')
+                                  .build();
+                              Patient patient = Patient(
+                                  id!, name.text, '', 1, int.parse(age.text));
+                              // id!, name.text, "", 1, int.parse(age.text)
+
+                              database.personDao.deletePatient(patient);
+
+                              //   deleteFromDb(
+                              //       id: patient![index].id,
+                              //       name: patient![index].name,
+                              //       age: patient![index].Bdate);
                             },
                             child: Icon(Icons.delete),
                           ),
@@ -68,32 +76,33 @@ class _HomePageState extends State<HomePage> {
                           ),
                           InkWell(
                             onTap: () {
-                              Navigator.push(
+                              Navigator.pushReplacement(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => updatepatient(
-                                      id: snapshot.data![index].id,
-                                       name: snapshot.data![index].name,
-                                        bdate: snapshot.data![index].Bdate,
-                                       
-                                        )),
+                                  builder: (context) =>
+                                      updatepatient(snapshot.data![index]),
+
+                                  //   id: snapshot.data![index]!.id,
+                                  //  name: snapshot.data![index]!.name,
+                                  // bdate: snapshot.data![index]!.Bdate,
+                                ),
                               );
                             },
                             child: Icon(Icons.edit),
                           ),
                         ],
                       ),
-                      subtitle: Text(snapshot.data![index].Bdate.toString()),
+                      subtitle: Text(snapshot.data![index]!.Bdate.toString()),
                     ));
               },
             );
           } else {
-            return const Center(child: CircularProgressIndicator());
+            return Center(child: CircularProgressIndicator());
           }
         },
       ),
       floatingActionButton: FloatingActionButton(
-        child: const Text('Add'),
+        child: Icon(Icons.add),
         onPressed: () => Navigator.of(context).pushNamed('addName'),
       ),
     );
@@ -104,9 +113,8 @@ class _HomePageState extends State<HomePage> {
         await $FloorAppDatabase.databaseBuilder('app_database.db').build();
     final PatientDao = database.personDao;
 
-    Patient patient = Patient(id, name!, 'image', 1, age!);
+    Patient patient = Patient(id!, name!, 'image', 1, age!);
 
     await PatientDao.deletePatient(patient);
-    setState(() {});
   }
 }

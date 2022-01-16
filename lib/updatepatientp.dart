@@ -3,16 +3,17 @@ import 'package:ammmmmmal/MODLE/patient.dart';
 import 'package:ammmmmmal/homepage.dart';
 import 'package:floor/floor.dart';
 import 'package:flutter/material.dart';
-
-import 'DAO/dao_person.dart';
+import 'DAO/dao_patient.dart';
 import 'DATABASE/database.dart';
 
 class updatepatient extends StatefulWidget {
-  String? name;
-  int? id;
-  int? bdate;
+  Patient? patient;
+  updatepatient(this.patient);
+  // String? name;
+  // int? id;
+  // int? bdate;
 
-  updatepatient({this.name, this.id, this.bdate});
+  // updatepatient({this.name, this.id, this.bdate});
 
   @override
   State<updatepatient> createState() => _updatepatientState();
@@ -22,6 +23,7 @@ class _updatepatientState extends State<updatepatient> {
   Patient? patient;
   PatientDao? dao;
   Database? db;
+  int? id;
   TextEditingController name = TextEditingController();
   TextEditingController age = TextEditingController();
   @override
@@ -41,7 +43,7 @@ class _updatepatientState extends State<updatepatient> {
                 style: TextStyle(fontSize: 20),
               ),
               TextField(
-                controller: name = TextEditingController(text: widget.name),
+                controller: name = TextEditingController(text: patient!.name),
                 autofocus: false,
               ),
               SizedBox(
@@ -53,7 +55,7 @@ class _updatepatientState extends State<updatepatient> {
               ),
               TextField(
                 controller: age =
-                    TextEditingController(text: widget.bdate.toString()),
+                    TextEditingController(text: patient!.Bdate.toString()),
                 autofocus: false,
               ),
               SizedBox(
@@ -64,10 +66,11 @@ class _updatepatientState extends State<updatepatient> {
                     final database = await $FloorAppDatabase
                         .databaseBuilder('app_database.db')
                         .build();
-                    Patient patient = Patient(
-                        widget.id, name.text, "", 1, int.parse(age.text));
 
+                    Patient patient =
+                        Patient(id!, name.text, "", 1, int.parse(age.text));
                     database.personDao.updatePerson(patient);
+                    print(patient);
                     Navigator.of(context).pushReplacement(
                       MaterialPageRoute(builder: (context) => HomePage()),
                     );

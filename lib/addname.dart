@@ -1,8 +1,8 @@
 // ignore_for_file: prefer_const_constructors, avoid_print, non_constant_identifier_names
 
-import 'package:ammmmmmal/DAO/dao_person.dart';
+import 'package:ammmmmmal/DAO/dao_patient.dart';
 import 'package:ammmmmmal/MODLE/patient.dart';
-
+import 'package:ammmmmmal/homepage.dart';
 
 import 'package:flutter/material.dart';
 
@@ -32,7 +32,6 @@ class _addNameState extends State<addName> {
         ),
         body: SingleChildScrollView(
           child: Column(
-            
             children: [
               SizedBox(
                 height: 50,
@@ -45,7 +44,6 @@ class _addNameState extends State<addName> {
                 padding: const EdgeInsets.all(8.0),
                 child: TextField(
                   controller: name,
-                  //autofocus: false,
                 ),
               ),
               SizedBox(
@@ -59,7 +57,6 @@ class _addNameState extends State<addName> {
                 padding: const EdgeInsets.all(8.0),
                 child: TextField(
                   controller: age,
-                  //autofocus: false,
                   keyboardType: TextInputType.number,
                 ),
               ),
@@ -67,13 +64,20 @@ class _addNameState extends State<addName> {
                 height: 100,
               ),
               ElevatedButton(
-                  onPressed: () {
-                    
-                    setState(() {
-                      inserttodatabase(name: name.text, age: int.parse(age.text));
-                  
-                    });
-                      Navigator.of(context).pop();
+                  onPressed: () async {
+                    final database = await $FloorAppDatabase
+                        .databaseBuilder('app_database.db')
+                        .build();
+                    Patient patient =
+                        Patient(id!, name.text, "", 1, int.parse(age.text));
+                    database.personDao.insertPerson(patient);
+
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (context) => HomePage()),
+                    );
+                    //    inserttodatabase(  name: name.text, age: int.parse(age.text));
+
+                    //     Navigator.of(context).push(MaterialPageRoute(builder: (context)=>HomePage()));
                   },
                   // async {
                   //   final database = await $FloorAppDatabase
@@ -95,14 +99,14 @@ class _addNameState extends State<addName> {
         ));
   }
 
-  inserttodatabase({@required String? name, @required int? age}) async {
-    final database =
-        await $FloorAppDatabase.databaseBuilder('app_database.db').build();
+  // inserttodatabase({@required String? name, @required int? age}) async {
+  //   final database =
+  //       await $FloorAppDatabase.databaseBuilder('app_database.db').build();
 
-    final PatientDao = database.personDao;
-    Patient patient = Patient(id, name!, 'image', 1, age!);
+  //   final PatientDao = database.personDao;
+  //   Patient patient = Patient(id!, name!, 'image', 1, age! );
 
-    await PatientDao.insertPerson(patient);
-    setState(() {});
-  }
+  //   await PatientDao.insertPerson(patient);
+
+  // }
 }

@@ -63,6 +63,12 @@ class _$AppDatabase extends AppDatabase {
 
   PatientDao? _personDaoInstance;
 
+  SatsDao? _satsDaoInstance;
+
+  PressureDao? _pressureDaoInstance;
+
+  DiabetesDao? _diabetesDaoInstance;
+
   Future<sqflite.Database> open(String path, List<Migration> migrations,
       [Callback? callback]) async {
     final databaseOptions = sqflite.OpenDatabaseOptions(
@@ -82,7 +88,13 @@ class _$AppDatabase extends AppDatabase {
       },
       onCreate: (database, version) async {
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `Patient` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `image` TEXT NOT NULL, `sex` INTEGER NOT NULL, `Bdate` INTEGER NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `Patient` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `image` TEXT NOT NULL, `sex` INTEGER NOT NULL, `Bdate` INTEGER NOT NULL, PRIMARY KEY (`id`))');
+        await database.execute(
+            'CREATE TABLE IF NOT EXISTS `sats` (`id` INTEGER NOT NULL, `sats value` INTEGER NOT NULL, `is_active` INTEGER NOT NULL, PRIMARY KEY (`id`))');
+        await database.execute(
+            'CREATE TABLE IF NOT EXISTS `diabetes` (`id` INTEGER NOT NULL, `diabetesBefore` INTEGER NOT NULL, `diabetesAfter` INTEGER NOT NULL, `is_active` INTEGER NOT NULL, PRIMARY KEY (`id`))');
+        await database.execute(
+            'CREATE TABLE IF NOT EXISTS `pressure` (`id` INTEGER NOT NULL, `systolicPressure` INTEGER NOT NULL, `diastolicPressure` INTEGER NOT NULL, `is_active` INTEGER NOT NULL, PRIMARY KEY (`id`))');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -93,6 +105,21 @@ class _$AppDatabase extends AppDatabase {
   @override
   PatientDao get personDao {
     return _personDaoInstance ??= _$PatientDao(database, changeListener);
+  }
+
+  @override
+  SatsDao get satsDao {
+    return _satsDaoInstance ??= _$SatsDao(database, changeListener);
+  }
+
+  @override
+  PressureDao get pressureDao {
+    return _pressureDaoInstance ??= _$PressureDao(database, changeListener);
+  }
+
+  @override
+  DiabetesDao get diabetesDao {
+    return _diabetesDaoInstance ??= _$DiabetesDao(database, changeListener);
   }
 }
 
@@ -145,10 +172,11 @@ class _$PatientDao extends PatientDao {
   final DeletionAdapter<Patient> _patientDeletionAdapter;
 
   @override
-  Future<List<Patient>> getAllPersons() async {
-    return _queryAdapter.queryList('SELECT * FROM Patient',
+  Future<List<Patient?>> getAllPersons() async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM Patient LEFT JOIN pressure LEFT JOIN diabetes LEFT JOIN sats',
         mapper: (Map<String, Object?> row) => Patient(
-            row['id'] as int?,
+            row['id'] as int,
             row['name'] as String,
             row['image'] as String,
             row['sex'] as int,
@@ -168,5 +196,212 @@ class _$PatientDao extends PatientDao {
   @override
   Future<void> deletePatient(Patient patient) async {
     await _patientDeletionAdapter.delete(patient);
+  }
+}
+
+class _$SatsDao extends SatsDao {
+  _$SatsDao(this.database, this.changeListener)
+      : _queryAdapter = QueryAdapter(database),
+        _satsInsertionAdapter = InsertionAdapter(
+            database,
+            'sats',
+            (Sats item) => <String, Object?>{
+                  'id': item.id,
+                  'sats value': item.satsValue,
+                  'is_active': item.isactive ? 1 : 0
+                }),
+        _satsUpdateAdapter = UpdateAdapter(
+            database,
+            'sats',
+            ['id'],
+            (Sats item) => <String, Object?>{
+                  'id': item.id,
+                  'sats value': item.satsValue,
+                  'is_active': item.isactive ? 1 : 0
+                }),
+        _satsDeletionAdapter = DeletionAdapter(
+            database,
+            'sats',
+            ['id'],
+            (Sats item) => <String, Object?>{
+                  'id': item.id,
+                  'sats value': item.satsValue,
+                  'is_active': item.isactive ? 1 : 0
+                });
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<Sats> _satsInsertionAdapter;
+
+  final UpdateAdapter<Sats> _satsUpdateAdapter;
+
+  final DeletionAdapter<Sats> _satsDeletionAdapter;
+
+  @override
+  Future<List<Sats>> getAllsats() async {
+    return _queryAdapter.queryList('SELECT * FROM sats',
+        mapper: (Map<String, Object?> row) => Sats(row['id'] as int,
+            (row['is_active'] as int) != 0, row['sats value'] as int));
+  }
+
+  @override
+  Future<void> insertsats(Sats sats) async {
+    await _satsInsertionAdapter.insert(sats, OnConflictStrategy.abort);
+  }
+
+  @override
+  Future<void> updatesats(Sats sats) async {
+    await _satsUpdateAdapter.update(sats, OnConflictStrategy.abort);
+  }
+
+  @override
+  Future<void> deletesats(Sats sats) async {
+    await _satsDeletionAdapter.delete(sats);
+  }
+}
+
+class _$PressureDao extends PressureDao {
+  _$PressureDao(this.database, this.changeListener)
+      : _queryAdapter = QueryAdapter(database),
+        _pressureInsertionAdapter = InsertionAdapter(
+            database,
+            'pressure',
+            (Pressure item) => <String, Object?>{
+                  'id': item.id,
+                  'systolicPressure': item.systolicPressure,
+                  'diastolicPressure': item.diastolicPressure,
+                  'is_active': item.isactive ? 1 : 0
+                }),
+        _pressureUpdateAdapter = UpdateAdapter(
+            database,
+            'pressure',
+            ['id'],
+            (Pressure item) => <String, Object?>{
+                  'id': item.id,
+                  'systolicPressure': item.systolicPressure,
+                  'diastolicPressure': item.diastolicPressure,
+                  'is_active': item.isactive ? 1 : 0
+                }),
+        _pressureDeletionAdapter = DeletionAdapter(
+            database,
+            'pressure',
+            ['id'],
+            (Pressure item) => <String, Object?>{
+                  'id': item.id,
+                  'systolicPressure': item.systolicPressure,
+                  'diastolicPressure': item.diastolicPressure,
+                  'is_active': item.isactive ? 1 : 0
+                });
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<Pressure> _pressureInsertionAdapter;
+
+  final UpdateAdapter<Pressure> _pressureUpdateAdapter;
+
+  final DeletionAdapter<Pressure> _pressureDeletionAdapter;
+
+  @override
+  Future<List<Pressure>> getAllPressure() async {
+    return _queryAdapter.queryList('SELECT * FROM pressure',
+        mapper: (Map<String, Object?> row) => Pressure(
+            row['id'] as int,
+            row['diastolicPressure'] as int,
+            (row['is_active'] as int) != 0,
+            row['systolicPressure'] as int));
+  }
+
+  @override
+  Future<void> insertpressure(Pressure pressure) async {
+    await _pressureInsertionAdapter.insert(pressure, OnConflictStrategy.abort);
+  }
+
+  @override
+  Future<void> updatepressure(Pressure pressure) async {
+    await _pressureUpdateAdapter.update(pressure, OnConflictStrategy.abort);
+  }
+
+  @override
+  Future<void> deletepressure(Pressure pressure) async {
+    await _pressureDeletionAdapter.delete(pressure);
+  }
+}
+
+class _$DiabetesDao extends DiabetesDao {
+  _$DiabetesDao(this.database, this.changeListener)
+      : _queryAdapter = QueryAdapter(database),
+        _diabetesInsertionAdapter = InsertionAdapter(
+            database,
+            'diabetes',
+            (diabetes item) => <String, Object?>{
+                  'id': item.id,
+                  'diabetesBefore': item.diabetesBefore,
+                  'diabetesAfter': item.diabetesAfter,
+                  'is_active': item.isactive ? 1 : 0
+                }),
+        _diabetesUpdateAdapter = UpdateAdapter(
+            database,
+            'diabetes',
+            ['id'],
+            (diabetes item) => <String, Object?>{
+                  'id': item.id,
+                  'diabetesBefore': item.diabetesBefore,
+                  'diabetesAfter': item.diabetesAfter,
+                  'is_active': item.isactive ? 1 : 0
+                }),
+        _diabetesDeletionAdapter = DeletionAdapter(
+            database,
+            'diabetes',
+            ['id'],
+            (diabetes item) => <String, Object?>{
+                  'id': item.id,
+                  'diabetesBefore': item.diabetesBefore,
+                  'diabetesAfter': item.diabetesAfter,
+                  'is_active': item.isactive ? 1 : 0
+                });
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<diabetes> _diabetesInsertionAdapter;
+
+  final UpdateAdapter<diabetes> _diabetesUpdateAdapter;
+
+  final DeletionAdapter<diabetes> _diabetesDeletionAdapter;
+
+  @override
+  Future<List<diabetes>> getAllDiabetes() async {
+    return _queryAdapter.queryList('SELECT * FROM diabetes',
+        mapper: (Map<String, Object?> row) => diabetes(
+            row['id'] as int,
+            row['diabetesAfter'] as int,
+            row['diabetesBefore'] as int,
+            (row['is_active'] as int) != 0));
+  }
+
+  @override
+  Future<void> insertDiabetes(diabetes diabetes) async {
+    await _diabetesInsertionAdapter.insert(diabetes, OnConflictStrategy.abort);
+  }
+
+  @override
+  Future<void> updateDiabetes(diabetes diabetes) async {
+    await _diabetesUpdateAdapter.update(diabetes, OnConflictStrategy.abort);
+  }
+
+  @override
+  Future<void> deleteDiabetes(diabetes diabetes) async {
+    await _diabetesDeletionAdapter.delete(diabetes);
   }
 }
